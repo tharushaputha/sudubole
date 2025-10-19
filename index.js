@@ -9,10 +9,14 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // ❗️❗️❗️ API KEYS & SECRETS: මේ කොටස හරියටම පුරවන්න ❗️❗️❗️
 // ===================================================================================
 const SUPABASE_URL = "https://geahwtilgbxlviwnbrcz.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIINiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYWh3dGlsZ2J4bHZpd25icmN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MTU4NzUsImV4cCI6MjA3NjM5MTg3NX0.eU5_re2SQNf_ysg5n-BiLORQimOOg5p-CX2uAaRbbrY";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYWh3dGlsZ2J4bHZpd25icmN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MTU4NzUsImV4cCI6MjA3NjM5MTg3NX0.eU5_re2SQNf_ysg5n-BiLORQimOOg5p-CX2uAaRbbrY";
+const GEMINI_API_KEY = "AIzaSyBH1Z_Z43fb8jwcfWb2m-fd3iS-qdQSQS8";
 const HCTI_API_USER_ID = "c55fa120-18bc-4c7b-9cd3-f2580f44441d";
 const HCTI_API_KEY = "1d850262-610c-4af3-b27e-617506f87e28";
-const GEMINI_API_KEY = "AIzaSyBQpw3aKpJzyQCAT2vUUCdDO4m3Loe9GeM"; // <-- මෙතනට ඔයාගේ අලුත් Gemini Key එක දාන්න
+// ===================================================================================
+// ❗️❗️❗️ ADMIN CONFIG: Bot එකේ අයිතිකාරයාගේ WhatsApp ID එක මෙතන දාන්න ❗️❗️❗️
+// ===================================================================================
+const OWNER_NUMBER = "94704997070@c.us"; // <-- මෙතනට ඔයාගේ WhatsApp ID එක දාන්න (hi යවලා console එකෙන් හොයාගන්න)
 // ===================================================================================
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -55,24 +59,25 @@ function generateBillHtml(orderDetails) {
     const { selected_product, customer_name, address, city } = orderDetails;
     const totalAmount = parseFloat(selected_product.price) + DELIVERY_CHARGE;
     const currentDate = new Date().toLocaleDateString('en-CA');
-    return `<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');body{font-family:'Poppins',sans-serif;margin:0;padding:25px;background-color:#f9f9f9;width:350px;}.invoice-box{background:white;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,0.08);}h1{font-size:24px;color:#333;text-align:center;margin-bottom:5px;}.shop-name{font-size:16px;color:#555;text-align:center;margin-bottom:20px;}.details{margin-bottom:20px;font-size:12px;}.details p{margin:2px 0;color:#444;}.item-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.item-table th,.item-table td{padding:8px;font-size:12px;text-align:left;border-bottom:1px solid #eee;}.item-table th{background:#f2f2f2;font-weight:600;}.total-section{text-align:right;margin-top:15px;}.total-section p{margin:4px 0;font-size:13px;}.total-section .grand-total{font-weight:600;font-size:14px;color:#000;}.footer{text-align:center;margin-top:20px;font-size:11px;color:#888;}</style></head><body><div class="invoice-box"><h1>WonderNest</h1><p class="shop-name">Order Invoice</p><div class="details"><p><b>Billed To:</b> ${customer_name}</p><p><b>Address:</b> ${address}, ${city}</p><p><b>Date:</b> ${currentDate}</p></div><table class="item-table"><thead><tr><th>Item</th><th>Price</th></tr></thead><tbody><tr><td>${selected_product.name}</td><td>Rs. ${selected_product.price.toFixed(2)}</td></tr></tbody></table><div class="total-section"><p>Subtotal: Rs. ${selected_product.price.toFixed(2)}</p><p>Delivery Fee: Rs. ${DELIVERY_CHARGE.toFixed(2)}</p><p class="grand-total">TOTAL: Rs. ${totalAmount.toFixed(2)}</p></div><p class="footer">Thank you for your order!</p></div></body></html>`;
+    
+    const primaryColor = '#87CEEB';
+    const accentColor = '#FFB6C1';
+    const textColor = '#36454F';
+    const lightBg = '#F5F5DC';
+    const whiteText = '#FFFFFF';
+
+    return `<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');body{font-family:'Poppins',sans-serif;margin:0;padding:25px;background-color:${lightBg};width:350px;box-sizing:border-box;}.invoice-box{background:${whiteText};padding:25px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1);border:1px solid ${accentColor};}.header{text-align:center;margin-bottom:25px;}.header h1{font-size:32px;color:${primaryColor};margin:0;font-weight:700;letter-spacing:1px;}.header .subtitle{font-size:14px;color:${textColor};margin-top:5px;}.details{margin-bottom:20px;font-size:13px;border-top:1px dashed ${accentColor};border-bottom:1px dashed ${accentColor};padding:10px 0;}.details p{margin:4px 0;color:${textColor};}.details b{color:${primaryColor};}.item-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.item-table th,.item-table td{padding:10px;font-size:13px;text-align:left;border-bottom:1px solid #eee;color:${textColor};}.item-table th{background:${primaryColor}1A;font-weight:600;color:${primaryColor};}.total-section{text-align:right;margin-top:20px;border-top:2px solid ${primaryColor};padding-top:10px;}.total-section p{margin:5px 0;font-size:14px;color:${textColor};}.total-section .grand-total{font-weight:700;font-size:18px;color:${accentColor};}.footer{text-align:center;margin-top:30px;font-size:12px;color:${textColor};opacity:0.8;}</style></head><body><div class="invoice-box"><div class="header"><h1><span style="color: ${whiteText}; background-color: ${primaryColor}; padding: 3px 8px; border-radius: 5px;">WonderNest</span></h1><p class="subtitle">Where Little Dreams Take Flight</p></div><div class="details"><p><b>Billed To:</b> ${customer_name}</p><p><b>Address:</b> ${address}, ${city}</p><p><b>Date:</b> ${currentDate}</p></div><table class="item-table"><thead><tr><th>Item</th><th>Price</th></tr></thead><tbody><tr><td>${selected_product.name}</td><td>Rs. ${parseFloat(selected_product.price).toFixed(2)}</td></tr></tbody></table><div class="total-section"><p>Subtotal: Rs. ${parseFloat(selected_product.price).toFixed(2)}</p><p>Delivery Fee: Rs. ${DELIVERY_CHARGE.toFixed(2)}</p><p class="grand-total">TOTAL: Rs. ${totalAmount.toFixed(2)}</p></div><p class="footer">Thank you for your order!</p></div></body></html>`;
 }
 
 async function getProvinceFromGemini(city) {
     try {
-        const prompt = `In which province of Sri Lanka is the city "${city}" located? Answer only with the province name in English (e.g., "Western", "Central", "Southern"). If you don't know, answer "Unknown".`;
+        const prompt = `In which province of Sri Lanka is the city "${city}" located? Answer only with the province name in English (e.g., "Western", "Central"). If you don't know, answer "Unknown".`;
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().toLowerCase();
-
-        if (text.includes("western")) {
-            return "Western";
-        } else {
-            return "Other";
-        }
+        const text = result.response.text().toLowerCase();
+        return text.includes("western") ? "Western" : "Other";
     } catch (error) {
         console.error("Gemini API Error:", error);
-        return "Unknown"; // Return a default value on error
+        return "Unknown";
     }
 }
 
@@ -81,6 +86,19 @@ client.on('message', async (message) => {
     const messageText = message.body ? message.body.trim().toLowerCase() : '';
     const originalMessageText = message.body ? message.body.trim() : '';
 
+    if (user_id === OWNER_NUMBER) {
+        if (messageText.startsWith('/accept')) {
+            const numberToAccept = messageText.split(' ')[1];
+            if (numberToAccept && /^\d+$/.test(numberToAccept)) {
+                const customerId = `${numberToAccept}@c.us`;
+                await deleteUserState(customerId);
+                return await client.sendMessage(user_id, `✅ Chat for user ${numberToAccept} has been unlocked and reset.`);
+            } else {
+                return await client.sendMessage(user_id, "Please provide a valid number. Usage: /accept 94771234567");
+            }
+        }
+    }
+
     const { data: userData } = await supabase.from('conversations').select('*').eq('user_id', user_id).single();
     
     let currentState = 'main_menu';
@@ -88,9 +106,16 @@ client.on('message', async (message) => {
     let sessionExpired = false;
 
     if (userData) {
+        if (userData.state === 'locked' && user_id !== OWNER_NUMBER) {
+            if (!userData.order_details?.locked_message_sent) {
+                await client.sendMessage(user_id, "🤝 ඔබගේ ඇණවුම අප වෙත ලැබී ඇත. අපගේ නියෝජිතයෙකු ඔබව ඉක්මනින් සම්බන්ධ කරගනු ඇත. කරුණාකර රැඳී සිටින්න.");
+                await updateUserState(user_id, 'locked', { ...userData.order_details, locked_message_sent: true });
+            }
+            return;
+        }
         const lastUpdated = new Date(userData.updated_at);
         const diffMinutes = (new Date().getTime() - lastUpdated.getTime()) / 60000;
-        if (diffMinutes >= SESSION_EXPIRY_MINUTES) {
+        if (diffMinutes >= SESSION_EXPIRY_MINUTES && userData.state !== 'main_menu') {
             sessionExpired = true;
         } else {
             currentState = userData.state;
@@ -116,7 +141,7 @@ client.on('message', async (message) => {
 
     if (sessionExpired) return await sendMainMenu();
     if (['0', 'cancel', 'back'].includes(messageText)) return await sendMainMenu();
-    const welcomeCommands = ['hi', 'hello', 'ආයුබෝවන්', 'menu', '/start', 'wondernest හා සම්බන්ධ වූවාට සුභ දවසක්'];
+    const welcomeCommands = ['hi', 'hello', 'ආයුබෝවන්', 'menu', '/start', 'reset'];
     if (welcomeCommands.includes(messageText)) return await sendMainMenu(true);
     
     switch (currentState) {
@@ -149,7 +174,7 @@ client.on('message', async (message) => {
                 case '5':
                     await client.sendMessage(user_id, "කරුණාකර මදක් රැඳී සිටින්න, අපගේ නියෝජිතයෙකු ඔබව දැන් සම්බන්ධ කරගනු ඇත.");
                     console.log(`AGENT ALERT: User ${user_id} requested an agent.`);
-                    await deleteUserState(user_id);
+                    await updateUserState(user_id, 'locked');
                     break;
                 default:
                     await client.sendMessage(user_id, "සමාවන්න, මට තේරුණේ නැත. කරුණාකර වලංගු විකල්පයක් (1-5) තෝරන්න.");
@@ -187,7 +212,7 @@ client.on('message', async (message) => {
                 await updateUserState(user_id, 'awaiting_address', currentOrderDetails);
             } else if (messageText === '2' || messageText.includes('bank')) {
                 await client.sendMessage(user_id, "🏦 *බැංකු ගෙවීම් විස්තර*\n\nBank: [Your Bank Name]\nAccount: [Your Account Number]\nName: WonderNest\n\nමුදල් තැන්පත් කර රිසිට්පතේ ඡායාරූපයක් එවන්න. අපගේ නියෝජිතයෙකු ඔබව සම්බන්ධ කරගනු ඇත.");
-                await deleteUserState(user_id);
+                await updateUserState(user_id, 'locked');
             } else await client.sendMessage(user_id, "කරුණාකර නිවැරදි ගෙවීම් ක්‍රමයක් තෝරන්න ('1' හෝ '2').\n\n*0.* ප්‍රධාන මෙනුවට යෑමට.");
             break;
 
@@ -214,12 +239,12 @@ client.on('message', async (message) => {
                     const billHtml = generateBillHtml(currentOrderDetails);
                     const response = await axios.post('https://hcti.io/v1/image', { html: billHtml }, { auth: { username: HCTI_API_USER_ID, password: HCTI_API_KEY } });
                     const media = await MessageMedia.fromUrl(response.data.url);
-                    await client.sendMessage(user_id, media, { caption: `✅ *ඇණවුම සාර්ථකයි!* ✅\n\nඔබගේ බිල්පත ඉහත දැක්වේ. බෙදාහැරීම දින 3-4ක් ඇතුළත සිදු වනු ඇත. අප හා සම්බන්ධ වූවාට ස්තූතියි!` });
+                    await client.sendMessage(user_id, media, { caption: `✅ *ඇණවුම සාර්ථකයි!* ✅\n\nඔබගේ බිල්පත ඉහත දැක්වේ. බෙදාහැරීම දින 3-4ක් ඇතුළත සිදු වනු ඇත.\n\nඅපගේ නියෝජිතයෙකු ඔබව ඉක්මනින් සම්බන්ධ කරගනු ඇත. ස්තූතියි!` });
                 } catch (billError) {
                     console.error("Bill generation failed:", billError.response ? billError.response.data : billError.message);
                     await client.sendMessage(user_id, "සමාවන්න, බිල්පත සෑදීමේදී දෝෂයක් ඇතිවිය. නමුත් ඔබගේ ඇණවුම අප වෙත ලැබී ඇත. අපගේ නියෝජිතයෙකු ඔබව සම්බන්ධ කරගනු ඇත.");
                 }
-                await deleteUserState(user_id);
+                await updateUserState(user_id, 'locked', currentOrderDetails);
             } else if (['නැහැ', 'naha'].includes(messageText)) {
                 await client.sendMessage(user_id, "කරුණාකර ඔබගේ විස්තර නැවත නිවැරදිව type කර එවන්න.\n\nFull Name\nAddress\nMobile Number\nCity\nDistrict\n\n*0.* ප්‍රධාන මෙනුවට යෑමට.");
                 await updateUserState(user_id, 'awaiting_address', currentOrderDetails);
@@ -228,12 +253,9 @@ client.on('message', async (message) => {
             
         case 'awaiting_city_delivery':
             const province = await getProvinceFromGemini(originalMessageText);
-            let deliveryEstimate;
-            if (province === 'Western') {
-                deliveryEstimate = `*${originalMessageText}* නගරය බස්නාහිර පළාතට අයත් වේ.\n🚚 බස්නාහිර පළාත සඳහා දින 1-4ක් ඇතුළත බෙදාහැරීම සිදු වේ.`;
-            } else {
-                deliveryEstimate = `*${originalMessageText}* නගරය සඳහා, 🚚 සාමාන්‍යයෙන් දින 3-5ක් ඇතුළත බෙදාහැරීම සිදු වේ.`;
-            }
+            let deliveryEstimate = (province === 'Western') 
+                ? `*${originalMessageText}* නගරය බස්නාහිර පළාතට අයත් වේ.\n🚚 බස්නාහිර පළාත සඳහා දින 1-4ක් ඇතුළත බෙදාහැරීම සිදු වේ.`
+                : `*${originalMessageText}* නගරය සඳහා, 🚚 සාමාන්‍යයෙන් දින 3-5ක් ඇතුළත බෙදාහැරීම සිදු වේ.`;
             await client.sendMessage(user_id, deliveryEstimate);
             await sendMainMenu();
             break;
@@ -241,7 +263,7 @@ client.on('message', async (message) => {
         case 'awaiting_agent_question':
             await client.sendMessage(user_id, "ඔබගේ ප්‍රශ්නය අප වෙත ලැබුණි. අපගේ නියෝජිතයෙකු ඔබව ඉක්මනින් සම්බන්ධ කරගනු ඇත. ස්තූතියි!");
             console.log(`AGENT ALERT: User ${user_id} asked: "${originalMessageText}"`);
-            await deleteUserState(user_id);
+            await updateUserState(user_id, 'locked');
             break;
     }
 });
